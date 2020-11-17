@@ -88,9 +88,10 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := &scopechecker.ScopeCheckRequest{
-				QueuedUri:   tt.qUri,
-				ScopeScript: tt.script,
-				Debug:       tt.debug,
+				QueuedUri:       tt.qUri,
+				ScopeScriptName: "scope_script",
+				ScopeScript:     tt.script,
+				Debug:           tt.debug,
 			}
 
 			got, err := server.ScopeCheck(context.TODO(), request)

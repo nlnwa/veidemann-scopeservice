@@ -175,6 +175,8 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWb
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nlnwa/veidemann-api/go v0.0.0-20201116102751-4854e4074562 h1:2iM1zSqff82u0+yvlr6zVzcUxQ92b7JbsHC+PaF1wPI=
 github.com/nlnwa/veidemann-api/go v0.0.0-20201116102751-4854e4074562/go.mod h1:z/vNzlRvbE4EKp4bx+d5PdQZDMtv9NonBgApWXM4Ir4=
+github.com/nlnwa/veidemann-api/go v0.0.0-20201117154851-3a30939f4afe h1:62TLF7JHMwqogf2nBaivBL29fpfEUFrHQwT8TTWq+FI=
+github.com/nlnwa/veidemann-api/go v0.0.0-20201117154851-3a30939f4afe/go.mod h1:z/vNzlRvbE4EKp4bx+d5PdQZDMtv9NonBgApWXM4Ir4=
 github.com/nlnwa/whatwg-url v0.0.0-20201105120751-69508a081205 h1:MQJlZkCbWSDmvMqQhC+WyC5+/t85sCJpyM6fkdK9WF0=
 github.com/nlnwa/whatwg-url v0.0.0-20201105120751-69508a081205/go.mod h1:L97nLsTBZQV+fZTyMl1z6RdDhqgGzZTMmrpTkZDEdts=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=

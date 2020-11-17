@@ -78,7 +78,7 @@ func uri_get_port(_ *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, 
 
 var (
 	True  Match = true
-	False Match = true
+	False Match = false
 )
 
 type Match bool

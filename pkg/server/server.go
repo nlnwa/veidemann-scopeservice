@@ -61,7 +61,7 @@ type ScopeCheckerService struct {
 
 func (s *ScopeCheckerService) ScopeCheck(_ context.Context, request *scopechecker.ScopeCheckRequest) (*scopechecker.ScopeCheckResponse, error) {
 	telemetry.ScopechecksTotal.Inc()
-	result := script.RunScopeScript("scope_script", request.ScopeScript, request.QueuedUri, request.Debug)
+	result := script.RunScopeScript(request.ScopeScriptName, request.ScopeScript, request.QueuedUri, request.Debug)
 	telemetry.ScopecheckResponseTotal.With(prometheus.Labels{"code": strconv.Itoa(int(result.ExcludeReason))}).Inc()
 	return result, nil
 }
