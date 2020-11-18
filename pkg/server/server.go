@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/nlnwa/veidemann-api/go/frontier/v1"
 	"github.com/nlnwa/veidemann-api/go/scopechecker/v1"
 	"github.com/nlnwa/veidemann-api/go/uricanonicalizer/v1"
 	otgrpc "github.com/opentracing-contrib/go-grpc"
@@ -70,7 +69,7 @@ type UriCanonicalizerService struct {
 	uricanonicalizer.UnimplementedUriCanonicalizerServiceServer
 }
 
-func (u *UriCanonicalizerService) Canonicalize(_ context.Context, uri *frontier.QueuedUri) (*frontier.QueuedUri, error) {
+func (u *UriCanonicalizerService) Canonicalize(_ context.Context, uri *uricanonicalizer.UriMessage) (*uricanonicalizer.UriMessage, error) {
 	telemetry.CanonicalizationsTotal.Inc()
 	canonicalized, err := script.CrawlCanonicalizationProfile.Parse(uri.Uri)
 	if err == nil {
