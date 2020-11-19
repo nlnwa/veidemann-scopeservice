@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/nlnwa/veidemann-api/go/commons/v1"
 	"github.com/nlnwa/veidemann-api/go/scopechecker/v1"
 	"github.com/nlnwa/veidemann-api/go/uricanonicalizer/v1"
 	otgrpc "github.com/opentracing-contrib/go-grpc"
@@ -69,12 +70,26 @@ type UriCanonicalizerService struct {
 	uricanonicalizer.UnimplementedUriCanonicalizerServiceServer
 }
 
-func (u *UriCanonicalizerService) Canonicalize(_ context.Context, uri *uricanonicalizer.UriMessage) (*uricanonicalizer.UriMessage, error) {
+func (u *UriCanonicalizerService) Canonicalize(_ context.Context, request *uricanonicalizer.CanonicalizeRequest) (*uricanonicalizer.CanonicalizeResponse, error) {
 	telemetry.CanonicalizationsTotal.Inc()
-	canonicalized, err := script.CrawlCanonicalizationProfile.Parse(uri.Uri)
+	canonicalized, err := script.CrawlCanonicalizationProfile.Parse(request.Uri)
 	if err == nil {
-		uri.Uri = canonicalized.String()
-		return uri, nil
+		return &uricanonicalizer.CanonicalizeResponse{
+			Uri: &commons.ParsedUri{
+				Href:     canonicalized.String(),
+				Scheme:   canonicalized.Scheme(),
+				Host:     canonicalized.Hostname(),
+				Port:     int32(canonicalized.DecodedPort()),
+				Username: canonicalized.Username(),
+				Password: canonicalized.Password(),
+				Path:     canonicalized.Pathname(),
+				Query:    canonicalized.Query(),
+				Fragment: canonicalized.Fragment(),
+			},
+		}, nil
 	}
-	return uri, err
+	return &uricanonicalizer.CanonicalizeResponse{
+		Uri: &commons.ParsedUri{
+			Href: request.Uri},
+	}, err
 }

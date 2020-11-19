@@ -44,7 +44,7 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 		return &scopechecker.ScopeCheckResponse{
 			Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
 			ExcludeReason:   IllegalUri.AsInt32(),
-			IncludeCheckUri: qUri.Uri,
+			IncludeCheckUri: &commons.ParsedUri{Href: qUri.Uri},
 			Error: &commons.Error{
 				Code:   IllegalUri.AsInt32(),
 				Msg:    "error parsing uri",
@@ -54,6 +54,8 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 		}
 	}
 
+	includeCheckUri := qUrl.AsCommonsParsedUri()
+
 	// Compile source
 	t := prometheus.NewTimer(telemetry.CompileScriptSeconds)
 	_, prog, err := starlark.SourceProgram(name, src, starlark.StringDict{}.Has)
@@ -61,7 +63,7 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 		return &scopechecker.ScopeCheckResponse{
 			Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
 			ExcludeReason:   RuntimeException.AsInt32(),
-			IncludeCheckUri: qUrl.String(),
+			IncludeCheckUri: includeCheckUri,
 			Error: &commons.Error{
 				Code:   RuntimeException.AsInt32(),
 				Msg:    "error parsing scope script",
@@ -87,7 +89,6 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 	}
 
 	// Set local variables
-	includeCheckUri := qUrl.String()
 	thread.SetLocal(urlKey, qUrl)
 	parameters := qUri.Annotation
 	for _, a := range parameters {

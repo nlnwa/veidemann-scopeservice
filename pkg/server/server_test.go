@@ -26,7 +26,6 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 		DiscoveredTimeStamp: ptypes.TimestampNow(),
 		Sequence:            2,
 		Uri:                 "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
-		Surt:                "",
 		Ip:                  "127.0.0.1",
 		DiscoveryPath:       "RL",
 		Referrer:            "http://foo.bar/",
@@ -45,31 +44,52 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 		want   *scopechecker.ScopeCheckResponse
 	}{
 		{"1", "test(True).then(ChaffDetection)", qUri, false, &scopechecker.ScopeCheckResponse{
-			Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
-			ExcludeReason:   script.ChaffDetection.AsInt32(),
-			IncludeCheckUri: "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
-			Console:         "",
+			Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+			ExcludeReason: script.ChaffDetection.AsInt32(),
+			IncludeCheckUri: &commons.ParsedUri{
+				Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+				Scheme: "http",
+				Host:   "foo.bar",
+				Port:   80,
+				Path:   "/aa%20bb/cc",
+				Query:  "foo&jsessionid=1",
+			},
+			Console: "",
 		}},
 		{"2",
 			"test(param(\"foo\"))", qUri, false,
 			&scopechecker.ScopeCheckResponse{
-				Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
-				ExcludeReason:   script.RuntimeException.AsInt32(),
-				IncludeCheckUri: "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
-				Console:         "",
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.RuntimeException.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "",
 				Error: &commons.Error{
 					Code:   -5,
 					Msg:    "error executing scope script",
-					Detail: "Traceback (most recent call last):\n  scope_script:1:11: in <toplevel>\n  <builtin>: in param\nError: no value with name 'foo'",
+					Detail: "Traceback (most recent call last):\n  scope_script:1:11: in <toplevel>\nError in param: no value with name 'foo'",
 				},
 			}},
 		{"3",
 			"test(", qUri, false,
 			&scopechecker.ScopeCheckResponse{
-				Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
-				ExcludeReason:   script.RuntimeException.AsInt32(),
-				IncludeCheckUri: "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
-				Console:         "",
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.RuntimeException.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "",
 				Error: &commons.Error{
 					Code:   -5,
 					Msg:    "error parsing scope script",
@@ -79,10 +99,17 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 		{"4",
 			"test(param(\"testValue\")).then(ChaffDetection).abort()", qUri, true,
 			&scopechecker.ScopeCheckResponse{
-				Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
-				ExcludeReason:   script.ChaffDetection.AsInt32(),
-				IncludeCheckUri: "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
-				Console:         "scope_script:1:5 test(\"True\") match=True\nscope_script:1:30 match.then(ChaffDetection) status=ChaffDetection\n",
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.ChaffDetection.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "scope_script:1:5 test(\"True\") match=True\nscope_script:1:30 match.then(ChaffDetection) status=ChaffDetection\n",
 			}},
 	}
 	for _, tt := range tests {
@@ -105,7 +132,7 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 			if got.ExcludeReason != tt.want.ExcludeReason {
 				t.Errorf("ScopeCheck() excludeReason got = %v, want %v", got.ExcludeReason, tt.want.ExcludeReason)
 			}
-			if got.IncludeCheckUri != tt.want.IncludeCheckUri {
+			if !reflect.DeepEqual(got.IncludeCheckUri, tt.want.IncludeCheckUri) {
 				t.Errorf("ScopeCheck() includeCheckUri got = %v, want %v", got.IncludeCheckUri, tt.want.IncludeCheckUri)
 			}
 			if got.Console != tt.want.Console {

@@ -1,6 +1,7 @@
 package script
 
 import (
+	"github.com/nlnwa/veidemann-api/go/commons/v1"
 	"github.com/nlnwa/veidemann-api/go/frontier/v1"
 	"github.com/nlnwa/whatwg-url/url"
 	"go.starlark.net/starlark"
@@ -29,6 +30,23 @@ func (u *UrlValue) String() string {
 	return u.parsedUri.String()
 }
 
+func (u *UrlValue) AsCommonsParsedUri() *commons.ParsedUri {
+	if u.parsedUri == nil {
+		return nil
+	}
+	return &commons.ParsedUri{
+		Href:     u.parsedUri.String(),
+		Scheme:   u.parsedUri.Scheme(),
+		Host:     u.parsedUri.Hostname(),
+		Port:     int32(u.parsedUri.DecodedPort()),
+		Username: u.parsedUri.Username(),
+		Password: u.parsedUri.Password(),
+		Path:     u.parsedUri.Pathname(),
+		Query:    u.parsedUri.Query(),
+		Fragment: u.parsedUri.Fragment(),
+	}
+}
+
 func (u *UrlValue) Type() string {
 	return "url"
 }
@@ -54,11 +72,11 @@ func (u *UrlValue) AttrNames() []string {
 }
 
 var urlMethods = map[string]*starlark.Builtin{
-	"host": starlark.NewBuiltin("host", uri_get_host),
-	"port": starlark.NewBuiltin("port", uri_get_port),
+	"host": starlark.NewBuiltin("host", uriGetHost),
+	"port": starlark.NewBuiltin("port", uriGetPort),
 }
 
-func uri_get_host(_ *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func uriGetHost(_ *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 0); err != nil {
 		return nil, err
 	}
@@ -67,7 +85,7 @@ func uri_get_host(_ *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, 
 	return starlark.String(u.parsedUri.Host()), nil
 }
 
-func uri_get_port(_ *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func uriGetPort(_ *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 0); err != nil {
 		return nil, err
 	}
@@ -105,9 +123,9 @@ func (m Match) Hash() (uint32, error) {
 	return uint32(b2i(bool(m))), nil
 }
 
-func (x Match) CompareSameType(op syntax.Token, y_ starlark.Value, _ int) (bool, error) {
+func (m Match) CompareSameType(op syntax.Token, y_ starlark.Value, _ int) (bool, error) {
 	y := y_.(Match)
-	return threeway(op, b2i(bool(x))-b2i(bool(y))), nil
+	return threeway(op, b2i(bool(m))-b2i(bool(y))), nil
 }
 
 func (m Match) Attr(name string) (starlark.Value, error) {
