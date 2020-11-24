@@ -54,7 +54,7 @@ func Test_isSameHost(t *testing.T) {
 			debug: false,
 			want: &scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
-				ExcludeReason: Include.AsInt32(),
+				ExcludeReason: Blocked.AsInt32(),
 				IncludeCheckUri: &commons.ParsedUri{
 					Href:   "http://sub.foo.bar/aa%20bb/cc?foo&jsessionid=1",
 					Scheme: "http",
@@ -62,6 +62,11 @@ func Test_isSameHost(t *testing.T) {
 					Port:   80,
 					Path:   "/aa%20bb/cc",
 					Query:  "foo&jsessionid=1",
+				},
+				Error: &commons.Error{
+					Code:   -5001,
+					Msg:    "Blocked",
+					Detail: "No scope rules matched",
 				},
 				Console: "",
 			}},
@@ -166,7 +171,7 @@ func Test_isScheme(t *testing.T) {
 			debug: false,
 			want: &scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
-				ExcludeReason: Include.AsInt32(),
+				ExcludeReason: Blocked.AsInt32(),
 				IncludeCheckUri: &commons.ParsedUri{
 					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
 					Scheme: "http",
@@ -174,6 +179,11 @@ func Test_isScheme(t *testing.T) {
 					Port:   80,
 					Path:   "/aa%20bb/cc",
 					Query:  "foo&jsessionid=1",
+				},
+				Error: &commons.Error{
+					Code:   -5001,
+					Msg:    "Blocked",
+					Detail: "No scope rules matched",
 				},
 				Console: "",
 			}},
@@ -411,7 +421,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 			debug: false,
 			want: &scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
-				ExcludeReason: Include.AsInt32(),
+				ExcludeReason: Blocked.AsInt32(),
 				IncludeCheckUri: &commons.ParsedUri{
 					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
 					Scheme: "http",
@@ -419,6 +429,11 @@ func Test_maxHopsFromSeed(t *testing.T) {
 					Port:   80,
 					Path:   "/aa%20bb/cc",
 					Query:  "foo&jsessionid=1",
+				},
+				Error: &commons.Error{
+					Code:   -5001,
+					Msg:    "Blocked",
+					Detail: "No scope rules matched",
 				},
 				Console: "",
 			}},

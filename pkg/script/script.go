@@ -144,17 +144,30 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 		}
 	}
 
-	result := scopechecker.ScopeCheckResponse_EXCLUDE
 	s, ok := thread.Local(resultKey).(Status)
-	if ok && s == 0 {
-		result = scopechecker.ScopeCheckResponse_INCLUDE
-	}
-
-	return &scopechecker.ScopeCheckResponse{
-		Evaluation:      result,
-		ExcludeReason:   s.AsInt32(),
-		IncludeCheckUri: includeCheckUri,
-		Error:           nil,
-		Console:         consoleLog.String(),
+	if ok {
+		if s == 0 {
+			return &scopechecker.ScopeCheckResponse{
+				Evaluation:      scopechecker.ScopeCheckResponse_INCLUDE,
+				ExcludeReason:   s.AsInt32(),
+				IncludeCheckUri: includeCheckUri,
+				Console:         consoleLog.String(),
+			}
+		} else {
+			return &scopechecker.ScopeCheckResponse{
+				Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason:   s.AsInt32(),
+				IncludeCheckUri: includeCheckUri,
+				Console:         consoleLog.String(),
+			}
+		}
+	} else {
+		return &scopechecker.ScopeCheckResponse{
+			Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
+			ExcludeReason:   Blocked.AsInt32(),
+			IncludeCheckUri: includeCheckUri,
+			Error:           (*commons.Error)(Blocked.asError("No scope rules matched")),
+			Console:         consoleLog.String(),
+		}
 	}
 }
