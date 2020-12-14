@@ -304,6 +304,76 @@ Error in param: no value with name 'scheme'`,
 	}
 }
 
+func Test_isReferrer(t *testing.T) {
+	tests := []testdata{
+		{name: "isReferrer1",
+			script: "isReferrer('http://foo.bar/sitemap.txt').then(Blocked).otherwise(Include).abort()",
+			qUri: &frontier.QueuedUri{
+				Uri:      "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
+				Referrer: "http://foo.bar/",
+			},
+			debug: false,
+			want: &scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_INCLUDE,
+				ExcludeReason: Include.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "",
+			}},
+		{name: "isReferrer2",
+			script: "isReferrer('http://foo.bar/sitemap.txt').then(Blocked).otherwise(Include).abort()",
+			qUri: &frontier.QueuedUri{
+				Uri:      "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
+				Referrer: "http://foo.bar/sitemap.txt",
+			},
+			debug: false,
+			want: &scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: Blocked.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "",
+			}},
+		{name: "isReferrer3",
+			script: "isReferrer('http://foo.bar/sitemap.txt http://foo.bar/aa').then(Blocked).otherwise(Include).abort()",
+			qUri: &frontier.QueuedUri{
+				Uri:      "http://foo.bar/bb",
+				Referrer: "http://foo.bar/aa",
+			},
+			debug: false,
+			want: &scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: Blocked.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/bb",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/bb",
+				},
+				Console: "",
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := RunScopeScript(tt.name, tt.script, tt.qUri, tt.debug)
+			verify(t, got, tt.want)
+		})
+	}
+}
+
 func Test_isUrl(t *testing.T) {
 	tests := []testdata{
 		{name: "isUrl1",
@@ -393,7 +463,7 @@ func Test_isUrl(t *testing.T) {
 func Test_maxHopsFromSeed(t *testing.T) {
 	tests := []testdata{
 		{name: "maxHopsFromSeed1",
-			script: "maxHopsFromSeed(3).then(TooManyHops).abort()",
+			script: "maxHopsFromSeed(2).then(TooManyHops).abort()",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "RLERLR",
@@ -443,7 +513,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "RLERLR",
 				Annotation: []*config.Annotation{
-					{Key: "depth", Value: "3"},
+					{Key: "depth", Value: "2"},
 				},
 			},
 			debug: false,
@@ -474,6 +544,46 @@ func Test_maxHopsFromSeed(t *testing.T) {
 			want: &scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
 				ExcludeReason: TooManyHops.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "",
+			}},
+		{name: "maxHopsFromSeed5",
+			script: "maxHopsFromSeed(0).then(TooManyHops).abort()",
+			qUri: &frontier.QueuedUri{
+				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
+				DiscoveryPath: "L",
+			},
+			debug: false,
+			want: &scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: TooManyHops.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
+					Scheme: "http",
+					Host:   "foo.bar",
+					Port:   80,
+					Path:   "/aa%20bb/cc",
+					Query:  "foo&jsessionid=1",
+				},
+				Console: "",
+			}},
+		{name: "maxHopsFromSeed6",
+			script: "maxHopsFromSeed(1).otherwise(Include).abort()",
+			qUri: &frontier.QueuedUri{
+				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
+				DiscoveryPath: "L",
+			},
+			debug: false,
+			want: &scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_INCLUDE,
+				ExcludeReason: Include.AsInt32(),
 				IncludeCheckUri: &commons.ParsedUri{
 					Href:   "http://foo.bar/aa%20bb/cc?foo&jsessionid=1",
 					Scheme: "http",
