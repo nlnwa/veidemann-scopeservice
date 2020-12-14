@@ -137,8 +137,24 @@ func (m Match) AttrNames() []string {
 }
 
 var matchMethods = map[string]*starlark.Builtin{
-	"then":  starlark.NewBuiltin("then", setStatus),
-	"abort": starlark.NewBuiltin("abort", abort),
+	"then":      starlark.NewBuiltin("then", setStatus),
+	"otherwise": starlark.NewBuiltin("otherwise", otherwise),
+	"abort":     starlark.NewBuiltin("abort", abort),
+}
+
+func otherwise(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	var status Status
+	if err := starlark.UnpackArgs(b.Name(), args, kwargs, "status", &status); err != nil {
+		return nil, err
+	}
+	match, _ := b.Receiver().(Match)
+	if !match {
+		printDebug(thread, b, args, kwargs, "status="+status.String())
+		thread.SetLocal(resultKey, status)
+		return match, nil
+	} else {
+		return match, nil
+	}
 }
 
 // threeway interprets a three-way comparison value cmp (-1, 0, +1)

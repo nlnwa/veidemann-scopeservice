@@ -12,6 +12,7 @@ func init() {
 	starlark.Universe["isSameHost"] = starlark.NewBuiltin("isSameHost", isSameHost)
 	starlark.Universe["maxHopsFromSeed"] = starlark.NewBuiltin("maxHopsFromSeed", maxHopsFromSeed)
 	starlark.Universe["isUrl"] = starlark.NewBuiltin("isUrl", isUrl)
+	starlark.Universe["isReferrer"] = starlark.NewBuiltin("isReferrer", isReferrer)
 }
 
 func test(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
@@ -41,6 +42,27 @@ func isScheme(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple,
 	}
 
 	printDebugf(thread, b, args, kwargs, "scheme=%v, wantScheme=%v, match=%v", s, scheme, match)
+
+	return match, nil
+}
+
+func isReferrer(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	var referrer string
+	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &referrer); err != nil {
+		return nil, err
+	}
+	qUrl := thread.Local(urlKey).(*UrlValue)
+	s := strings.TrimSpace(qUrl.qUri.Referrer)
+	referrer = strings.ToLower(referrer)
+	match := False
+	for _, t := range strings.Fields(referrer) {
+		if t == s {
+			match = True
+			break
+		}
+	}
+
+	printDebugf(thread, b, args, kwargs, "referrer=%v, wantReferrer=%v, match=%v", s, referrer, match)
 
 	return match, nil
 }
@@ -83,7 +105,7 @@ func maxHopsFromSeed(thread *starlark.Thread, b *starlark.Builtin, args starlark
 	var match bool
 
 	if h, err := parameterAsInt64(maxHops); err == nil {
-		match = len(discoveryPath) >= int(h)
+		match = len(discoveryPath) > int(h)
 	} else {
 		if err != None {
 			return nil, err

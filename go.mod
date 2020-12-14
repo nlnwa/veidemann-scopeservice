@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.4.3
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/nlnwa/veidemann-api/go v0.0.0-20201119095736-ba1d685a4314
+	github.com/nlnwa/veidemann-api/go v0.0.0-20201211114104-e5b947faa1a3
 	github.com/nlnwa/whatwg-url v0.1.0
 	github.com/opentracing-contrib/go-grpc v0.0.0-20200813121455-4a6760c71486
 	github.com/opentracing/opentracing-go v1.2.0
