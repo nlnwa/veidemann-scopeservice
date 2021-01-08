@@ -149,7 +149,6 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 		if s == 0 {
 			return &scopechecker.ScopeCheckResponse{
 				Evaluation:      scopechecker.ScopeCheckResponse_INCLUDE,
-				ExcludeReason:   s.AsInt32(),
 				IncludeCheckUri: includeCheckUri,
 				Console:         consoleLog.String(),
 			}

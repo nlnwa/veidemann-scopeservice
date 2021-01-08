@@ -69,22 +69,31 @@ func isReferrer(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tupl
 
 func isSameHost(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var includeSubdomains starlark.Value
-	if err := starlark.UnpackArgs(b.Name(), args, kwargs, "includeSubdomains?", &includeSubdomains); err != nil {
+	var altSeeds string
+	if err := starlark.UnpackArgs(b.Name(), args, kwargs, "includeSubdomains?", &includeSubdomains, "altSeeds?", &altSeeds); err != nil {
 		return nil, err
 	}
 
 	match := false
 	qUrl := thread.Local(urlKey).(*UrlValue)
 	host := qUrl.parsedUri.Hostname()
-	if seed, err := ScopeCanonicalizationProfile.Parse(qUrl.qUri.SeedUri); err == nil {
-		match = host == seed.Hostname()
-		if !match && parameterAsBool(includeSubdomains) {
-			match = strings.HasSuffix(host, "."+seed.Hostname())
+
+	seeds := append(strings.Fields(altSeeds), qUrl.qUri.SeedUri)
+	for _, s := range seeds {
+		if seed, err := ScopeCanonicalizationProfile.Parse(s); err == nil {
+			altSeeds = seed.Hostname()
+			match = host == altSeeds
+			if !match && parameterAsBool(includeSubdomains) {
+				match = strings.HasSuffix(host, "."+altSeeds)
+			}
+			printDebugf(thread, b, args, kwargs, "host=%v, seedHost=%v, match=%v", host, altSeeds, match)
+			if match {
+				break
+			}
+		} else {
+			printDebugf(thread, b, args, kwargs, "Could not parse seed '%v'", s)
+			return nil, IllegalUri.asError(fmt.Sprintf("Could not parse seed '%v'", s))
 		}
-		printDebugf(thread, b, args, kwargs, "host=%v, seedHost=%v, match=%v", host, seed.Hostname(), match)
-	} else {
-		printDebugf(thread, b, args, kwargs, "Could not parse seed '%v'", qUrl.qUri.SeedUri)
-		return nil, IllegalUri.asError(fmt.Sprintf("Could not parse seed '%v'", qUrl.qUri.SeedUri))
 	}
 
 	return Match(match), nil

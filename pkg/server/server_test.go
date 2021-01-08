@@ -20,21 +20,8 @@ func init() {
 
 func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 	server := &ScopeCheckerService{}
-	qUri := &frontier.QueuedUri{
-		Id:                  "id1",
-		ExecutionId:         "eid1",
-		DiscoveredTimeStamp: ptypes.TimestampNow(),
-		Sequence:            2,
-		Uri:                 "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
-		Ip:                  "127.0.0.1",
-		DiscoveryPath:       "RL",
-		Referrer:            "http://foo.bar/",
-		Cookies:             nil,
-		Retries:             0,
-		Annotation: []*config.Annotation{
-			{Key: "testValue", Value: "True"},
-		},
-	}
+	qUri := newQUri("http://foo.bar/aa bb/cc?jsessionid=1&foo#bar", "http://foo.bar/", "RL")
+	badQUri := newQUri("http://%00foo.bar/aa bb/cc?jsessionid=1&foo#bar", "http://foo.bar/", "RL")
 
 	tests := []struct {
 		name   string
@@ -43,7 +30,7 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 		debug  bool
 		want   *scopechecker.ScopeCheckResponse
 	}{
-		{"1", "test(True).then(ChaffDetection)", qUri, false, &scopechecker.ScopeCheckResponse{
+		{"exclude", "test(True).then(ChaffDetection)", qUri, false, &scopechecker.ScopeCheckResponse{
 			Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
 			ExcludeReason: script.ChaffDetection.AsInt32(),
 			IncludeCheckUri: &commons.ParsedUri{
@@ -56,7 +43,7 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 			},
 			Console: "",
 		}},
-		{"2",
+		{"missingParam",
 			"test(param(\"foo\"))", qUri, false,
 			&scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
@@ -76,7 +63,7 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 					Detail: "Traceback (most recent call last):\n  scope_script:1:11: in <toplevel>\nError in param: no value with name 'foo'",
 				},
 			}},
-		{"3",
+		{"badScript",
 			"test(", qUri, false,
 			&scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
@@ -96,8 +83,8 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 					Detail: "scope_script:1:6: got end of file, want ')'",
 				},
 			}},
-		{"4",
-			"test(param(\"testValue\")).then(ChaffDetection).abort()", qUri, true,
+		{"withDebug",
+			"test(param(\"testValue\")).then(ChaffDetection)", qUri, true,
 			&scopechecker.ScopeCheckResponse{
 				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
 				ExcludeReason: script.ChaffDetection.AsInt32(),
@@ -110,6 +97,21 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 					Query:  "foo&jsessionid=1",
 				},
 				Console: "scope_script:1:5 test(\"True\") match=True\nscope_script:1:30 match.then(ChaffDetection) status=ChaffDetection\n",
+			}},
+		{"badUri",
+			"test(True).then(ChaffDetection)", badQUri, true,
+			&scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.IllegalUri.AsInt32(),
+				IncludeCheckUri: &commons.ParsedUri{
+					Href: "http://%00foo.bar/aa bb/cc?jsessionid=1&foo#bar",
+				},
+				Console: "",
+				Error: &commons.Error{
+					Code:   -7,
+					Msg:    "error parsing uri",
+					Detail: "Error: 504: illegal host, Url: http://%00foo.bar/aa bb/cc?jsessionid=1&foo#bar, Cause: Error: 100: illegal code point '\x00'",
+				},
 			}},
 	}
 	for _, tt := range tests {
@@ -144,6 +146,112 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 				t.Errorf("ScopeCheck() error \nGot:\n%v\nWant:\n%v\n", formatError(got.Error), formatError(tt.want.Error))
 			}
 		})
+	}
+}
+
+func TestFullScript(t *testing.T) {
+	server := &ScopeCheckerService{}
+
+	defaultScript := `
+isScheme(param('scope_allowedSchemes')).otherwise(Blocked)
+isSameHost(param('scope_includeSubdomains'), altSeeds=param('scope_altSeed')).then(Include, continueEvaluation=True).otherwise(Blocked, continueEvaluation=False)
+maxHopsFromSeed(param('scope_maxHopsFromSeed'), param('scope_hopsIncludeRedirects')).then(TooManyHops)
+isUrl(param('scope_excludedUris')).then(Blocked)`
+
+	tests := []struct {
+		name  string
+		qUri  *frontier.QueuedUri
+		debug bool
+		want  *scopechecker.ScopeCheckResponse
+	}{
+		{"include",
+			newQUri("http://foo.bar/aa", "http://foo.bar/", "RL"),
+			false,
+			&scopechecker.ScopeCheckResponse{
+				Evaluation: scopechecker.ScopeCheckResponse_INCLUDE,
+			}},
+		{"wrongScheme",
+			newQUri("ftp://foo.bar/aa", "http://foo.bar/", "RL"),
+			false,
+			&scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.Blocked.AsInt32(),
+			}},
+		{"tooManyHops",
+			newQUri("http://foo.bar/aa", "http://foo.bar/", "RLLL"),
+			false,
+			&scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.TooManyHops.AsInt32(),
+			}},
+		{"offHost",
+			newQUri("http://foo2.bar/aa", "http://foo.bar/", "RL"),
+			false,
+			&scopechecker.ScopeCheckResponse{
+				Evaluation:    scopechecker.ScopeCheckResponse_EXCLUDE,
+				ExcludeReason: script.Blocked.AsInt32(),
+			}},
+		{"altHost",
+			newQUri("http://alt.host.com/aa", "http://foo.bar/", "RL"),
+			false,
+			&scopechecker.ScopeCheckResponse{
+				Evaluation: scopechecker.ScopeCheckResponse_INCLUDE,
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request := &scopechecker.ScopeCheckRequest{
+				QueuedUri:       tt.qUri,
+				ScopeScriptName: "scope_script",
+				ScopeScript:     defaultScript,
+				Debug:           tt.debug,
+			}
+
+			got, err := server.ScopeCheck(context.TODO(), request)
+			if err != nil {
+				t.Errorf("ScopeCheck() error = %v", err)
+				return
+			}
+			if got.Evaluation != tt.want.Evaluation {
+				t.Errorf("ScopeCheck() evaluation got = %v, want %v", got.Evaluation, tt.want.Evaluation)
+			}
+			if got.ExcludeReason != tt.want.ExcludeReason {
+				t.Errorf("ScopeCheck() excludeReason got = %v, want %v", got.ExcludeReason, tt.want.ExcludeReason)
+			}
+			if got.Console != tt.want.Console {
+				t.Errorf("ScopeCheck() consoleLog \ngot:\n  %v\nwant:\n  %v",
+					strings.ReplaceAll(got.Console, "\n", "\n  "),
+					strings.ReplaceAll(tt.want.Console, "\n", "\n  "))
+			}
+			if !reflect.DeepEqual(got.Error, tt.want.Error) {
+				t.Errorf("ScopeCheck() error \nGot:\n%v\nWant:\n%v\n", formatError(got.Error), formatError(tt.want.Error))
+			}
+		})
+	}
+}
+
+func newQUri(uri, seed, discoveryPath string) *frontier.QueuedUri {
+	return &frontier.QueuedUri{
+		Id:                  "id1",
+		ExecutionId:         "eid1",
+		DiscoveredTimeStamp: ptypes.TimestampNow(),
+		Sequence:            2,
+		Uri:                 uri,
+		Ip:                  "127.0.0.1",
+		DiscoveryPath:       discoveryPath,
+		SeedUri:             seed,
+		Referrer:            "http://foo.bar/",
+		Cookies:             nil,
+		Retries:             0,
+		Annotation: []*config.Annotation{
+			{Key: "testValue", Value: "True"},
+			{Key: "scope_includeSubdomains", Value: "True"},
+			{Key: "scope_maxHopsFromSeed", Value: "2"},
+			{Key: "scope_hopsIncludeRedirects", Value: "True"},
+			{Key: "scope_excludedUris", Value: ""},
+			{Key: "scope_allowedSchemes", Value: "http https"},
+			{Key: "scope_altSeed", Value: "alt.host.com"},
+		},
 	}
 }
 
