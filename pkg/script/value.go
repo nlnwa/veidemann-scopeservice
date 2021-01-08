@@ -137,21 +137,33 @@ func (m Match) AttrNames() []string {
 }
 
 var matchMethods = map[string]*starlark.Builtin{
-	"then":      starlark.NewBuiltin("then", setStatus),
+	"then":      starlark.NewBuiltin("then", then),
 	"otherwise": starlark.NewBuiltin("otherwise", otherwise),
-	"abort":     starlark.NewBuiltin("abort", abort),
+}
+
+func then(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return matchAction(thread, b, args, kwargs, false)
 }
 
 func otherwise(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return matchAction(thread, b, args, kwargs, true)
+}
+
+func matchAction(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple, invert bool) (starlark.Value, error) {
 	var status Status
-	if err := starlark.UnpackArgs(b.Name(), args, kwargs, "status", &status); err != nil {
+	var continueEvaluation = starlark.False
+	if err := starlark.UnpackArgs(b.Name(), args, kwargs, "status", &status, "continueEvaluation?", &continueEvaluation); err != nil {
 		return nil, err
 	}
 	match, _ := b.Receiver().(Match)
-	if !match {
+	if bool(match) != invert {
 		printDebug(thread, b, args, kwargs, "status="+status.String())
 		thread.SetLocal(resultKey, status)
-		return match, nil
+		if continueEvaluation {
+			return match, nil
+		} else {
+			return match, EndOfComputation
+		}
 	} else {
 		return match, nil
 	}

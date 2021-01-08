@@ -29,11 +29,11 @@ func BenchmarkParse(b *testing.B) {
 		qUri   *frontier.QueuedUri
 	}{
 		{"1", "test(True).then(ChaffDetection)", qUri},
-		{"2", "test(param(\"testValue\")).then(ChaffDetection).abort()", qUri},
+		{"2", "test(param(\"testValue\")).then(ChaffDetection)", qUri},
 		{"3", `
-isSameHost().then(ChaffDetection)
-isScheme('ftp').then(Blocked).abort()
-maxHopsFromSeed(1).then(Include).abort()
+isSameHost().then(ChaffDetection, continueEvaluation=True)
+isScheme('ftp').then(Blocked)
+maxHopsFromSeed(1).then(Include)
 `, qUri},
 	}
 

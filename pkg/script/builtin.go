@@ -71,19 +71,9 @@ func setStatus(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple
 	if err := starlark.UnpackArgs(b.Name(), args, kwargs, "status", &status); err != nil {
 		return nil, err
 	}
-	if match, ok := b.Receiver().(Match); ok {
-		if match {
-			printDebug(thread, b, args, kwargs, "status="+status.String())
-			thread.SetLocal(resultKey, status)
-			return match, nil
-		} else {
-			return match, nil
-		}
-	} else {
-		thread.SetLocal(resultKey, status)
-		printDebug(thread, b, args, kwargs, "status="+status.String())
-		return starlark.None, nil
-	}
+	thread.SetLocal(resultKey, status)
+	printDebug(thread, b, args, kwargs, "status="+status.String())
+	return starlark.None, nil
 }
 
 func debug(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {

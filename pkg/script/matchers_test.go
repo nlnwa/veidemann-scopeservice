@@ -26,7 +26,7 @@ func init() {
 func Test_isSameHost(t *testing.T) {
 	tests := []testdata{
 		{name: "isSameHost1",
-			script: "isSameHost().then(Include).abort()",
+			script: "isSameHost().then(Include, continueEvaluation=True)",
 			qUri: &frontier.QueuedUri{
 				Uri:     "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				SeedUri: "http://foo.bar",
@@ -46,7 +46,7 @@ func Test_isSameHost(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isSameHost2",
-			script: "isSameHost().then(Include).abort()",
+			script: "isSameHost().then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:     "http://sub.foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				SeedUri: "http://foo.bar",
@@ -71,7 +71,7 @@ func Test_isSameHost(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isSameHostSub1",
-			script: "isSameHost(True).then(Include).abort()",
+			script: "isSameHost(True).then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:     "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				SeedUri: "http://foo.bar",
@@ -91,7 +91,7 @@ func Test_isSameHost(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isSameHostSub2",
-			script: "isSameHost(True).then(Include).abort()",
+			script: "isSameHost(True).then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:     "http://sub.foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				SeedUri: "http://foo.bar",
@@ -111,7 +111,7 @@ func Test_isSameHost(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isSameHostSub3",
-			script: "isSameHost(param('IncludeSubdomain')).then(Include).abort()",
+			script: "isSameHost(param('IncludeSubdomain')).then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:     "http://sub.foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				SeedUri: "http://foo.bar",
@@ -145,7 +145,7 @@ func Test_isSameHost(t *testing.T) {
 func Test_isScheme(t *testing.T) {
 	tests := []testdata{
 		{name: "isScheme1",
-			script: "isScheme('http').then(Include).abort()",
+			script: "isScheme('http').then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 			},
@@ -164,7 +164,7 @@ func Test_isScheme(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isScheme2",
-			script: "isScheme('https').then(Include).abort()",
+			script: "isScheme('https').then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 			},
@@ -188,7 +188,7 @@ func Test_isScheme(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isScheme3",
-			script: "isScheme(param('scheme')).then(Include).abort()",
+			script: "isScheme(param('scheme')).then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				Annotation: []*config.Annotation{
@@ -210,7 +210,7 @@ func Test_isScheme(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isScheme4",
-			script: "isScheme(param('scheme')).then(Include).abort()",
+			script: "isScheme(param('scheme')).then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "HttP://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				Annotation: []*config.Annotation{
@@ -232,7 +232,7 @@ func Test_isScheme(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isScheme5",
-			script: "isScheme(param('scheme')).then(Include).abort()",
+			script: "isScheme(param('scheme')).then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 			},
@@ -258,7 +258,7 @@ Error in param: no value with name 'scheme'`,
 				},
 			}},
 		{name: "isScheme6",
-			script: "isScheme('http').then(Include).abort()",
+			script: "isScheme('http').then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 			},
@@ -277,7 +277,7 @@ Error in param: no value with name 'scheme'`,
 				Console: "",
 			}},
 		{name: "isScheme7",
-			script: "isScheme(param('scheme')).then(Blocked).abort()",
+			script: "isScheme(param('scheme')).then(Blocked)",
 			qUri: &frontier.QueuedUri{
 				Uri: "file:c|/foo/bar/aa bb/",
 				Annotation: []*config.Annotation{
@@ -307,7 +307,7 @@ Error in param: no value with name 'scheme'`,
 func Test_isReferrer(t *testing.T) {
 	tests := []testdata{
 		{name: "isReferrer1",
-			script: "isReferrer('http://foo.bar/sitemap.txt').then(Blocked).otherwise(Include).abort()",
+			script: "isReferrer('http://foo.bar/sitemap.txt').then(Blocked).otherwise(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:      "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				Referrer: "http://foo.bar/",
@@ -327,7 +327,7 @@ func Test_isReferrer(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isReferrer2",
-			script: "isReferrer('http://foo.bar/sitemap.txt').then(Blocked).otherwise(Include).abort()",
+			script: "isReferrer('http://foo.bar/sitemap.txt').then(Blocked).otherwise(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:      "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				Referrer: "http://foo.bar/sitemap.txt",
@@ -347,7 +347,7 @@ func Test_isReferrer(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isReferrer3",
-			script: "isReferrer('http://foo.bar/sitemap.txt http://foo.bar/aa').then(Blocked).otherwise(Include).abort()",
+			script: "isReferrer('http://foo.bar/sitemap.txt http://foo.bar/aa').then(Blocked).otherwise(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:      "http://foo.bar/bb",
 				Referrer: "http://foo.bar/aa",
@@ -377,7 +377,7 @@ func Test_isReferrer(t *testing.T) {
 func Test_isUrl(t *testing.T) {
 	tests := []testdata{
 		{name: "isUrl1",
-			script: "isUrl('http://foo.bar/aa//bb/cc?jsessionid=1&foo#bar').then(Include).abort()",
+			script: "isUrl('http://foo.bar/aa//bb/cc?jsessionid=1&foo#bar').then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa//bb/cc?jsessionid=1&foo#bar",
 			},
@@ -396,7 +396,7 @@ func Test_isUrl(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isUrl2",
-			script: "isUrl('http://foo.bar/aa//bb/cc?foo&a=c&jsessionid=1&a=b').then(Include).abort()",
+			script: "isUrl('http://foo.bar/aa//bb/cc?foo&a=c&jsessionid=1&a=b').then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa//bb/cc?jsessionid=1&foo&a=c&a=b#bar",
 			},
@@ -415,7 +415,7 @@ func Test_isUrl(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isUrl3",
-			script: "isUrl('foo.bar/aa/ff/../bb/cc?foo&a=c&jsessionid=1&a=b').then(Include).abort()",
+			script: "isUrl('foo.bar/aa/ff/../bb/cc?foo&a=c&jsessionid=1&a=b').then(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa//bb/cc?jsessionid=1&foo&a=c&a=b#bar",
 			},
@@ -434,7 +434,7 @@ func Test_isUrl(t *testing.T) {
 				Console: "",
 			}},
 		{name: "isUrl4",
-			script: "isUrl('foo.bar/aa/ example.com').then(Blocked).abort()",
+			script: "isUrl('foo.bar/aa/ example.com').then(Blocked)",
 			qUri: &frontier.QueuedUri{
 				Uri: "http://foo.bar/aa/",
 			},
@@ -463,7 +463,7 @@ func Test_isUrl(t *testing.T) {
 func Test_maxHopsFromSeed(t *testing.T) {
 	tests := []testdata{
 		{name: "maxHopsFromSeed1",
-			script: "maxHopsFromSeed(2).then(TooManyHops).abort()",
+			script: "maxHopsFromSeed(2).then(TooManyHops)",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "RLERLR",
@@ -483,7 +483,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 				Console: "",
 			}},
 		{name: "maxHopsFromSeed2",
-			script: "maxHopsFromSeed(4).then(TooManyHops).abort()",
+			script: "maxHopsFromSeed(4).then(TooManyHops)",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "RLERLR",
@@ -508,7 +508,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 				Console: "",
 			}},
 		{name: "maxHopsFromSeed3",
-			script: "maxHopsFromSeed(param('depth')).then(TooManyHops).abort()",
+			script: "maxHopsFromSeed(param('depth')).then(TooManyHops)",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "RLERLR",
@@ -531,7 +531,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 				Console: "",
 			}},
 		{name: "maxHopsFromSeed4",
-			script: "maxHopsFromSeed(param('depth'), param('includeRedirects')).then(TooManyHops).abort()",
+			script: "maxHopsFromSeed(param('depth'), param('includeRedirects')).then(TooManyHops)",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "RLERLR",
@@ -555,7 +555,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 				Console: "",
 			}},
 		{name: "maxHopsFromSeed5",
-			script: "maxHopsFromSeed(0).then(TooManyHops).abort()",
+			script: "maxHopsFromSeed(0).then(TooManyHops)",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "L",
@@ -575,7 +575,7 @@ func Test_maxHopsFromSeed(t *testing.T) {
 				Console: "",
 			}},
 		{name: "maxHopsFromSeed6",
-			script: "maxHopsFromSeed(1).otherwise(Include).abort()",
+			script: "maxHopsFromSeed(1).otherwise(Include)",
 			qUri: &frontier.QueuedUri{
 				Uri:           "http://foo.bar/aa bb/cc?jsessionid=1&foo#bar",
 				DiscoveryPath: "L",
