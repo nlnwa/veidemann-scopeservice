@@ -1,5 +1,6 @@
-baseURL = "https://nlnwa.github.io/veidemann-scopeservice/"
+baseURL = "https://nlnwa.github.io/veidemann-scopeservice"
 languageCode = "en-us"
+defaultContentLanguage = "en"
 title = "Veidemann Scope Service"
 theme = "learn"
 publishdir = "../docs"
@@ -14,6 +15,9 @@ publishdir = "../docs"
     disableNextPrev = true
     # Provide a list of custom css files to load relative from the `static/` folder in the site root.
     custom_css = ["css/funcdef.css"]
+
+    landingPageURL = "/veidemann-scopeservice"
+    landingPageName = "<i class='fas fa-home'></i> Overview"
 
 [markup]
     defaultMarkdownHandler = "goldmark"

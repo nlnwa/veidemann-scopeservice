@@ -1,8 +1,0 @@
-functions:
-  - name: test
-    params:
-      - name: match
-        default: False
-        optional: false
-      - name: another
-        optional: true

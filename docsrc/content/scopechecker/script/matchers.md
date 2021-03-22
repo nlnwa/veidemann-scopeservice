@@ -31,15 +31,3 @@ Space separated string with urls
 isUrl("http://example.com")
 ```
 {{< /funcdef >}}
-
-
-
-
-
-
-
-
-
-Hugo uses Go’s Regular Expression package, which is the same general syntax used by Perl, Python, and other languages but with a few minor differences for those coming from a background in PCRE. For a full syntax listing, see the GitHub wiki for re2.
-
-If you are just learning RegEx, or at least Go’s flavor, you can practice pattern matching in the browser at https://regex101.com/.
