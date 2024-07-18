@@ -3,8 +3,9 @@ package script
 import (
 	"errors"
 	"fmt"
-	"go.starlark.net/starlark"
 	"strings"
+
+	"go.starlark.net/starlark"
 )
 
 func init() {

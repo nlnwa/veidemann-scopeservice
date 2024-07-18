@@ -3,6 +3,7 @@ package script
 import (
 	"errors"
 	"fmt"
+
 	"github.com/nlnwa/veidemann-api/go/commons/v1"
 	"github.com/nlnwa/veidemann-api/go/scopechecker/v1"
 	"go.starlark.net/starlark"
@@ -10,13 +11,13 @@ import (
 
 // init inserts constants into starlark environment.
 //
-//   *    -5 RUNTIME_EXCEPTION           Unexpected runtime exception.
-//   *    -7 ILLEGAL_URI                 URI recognized as unsupported or illegal.
-//   * -4000 CHAFF_DETECTION             Chaff detection of traps/content with negligible value applied.
-//   * -4001 TOO_MANY_HOPS               The URI is too many link hops away from the seed.
-//   * -4002 TOO_MANY_TRANSITIVE_HOPS    The URI is too many embed/transitive hops away from the last URI in scope.
-//   * -5001 BLOCKED                     Blocked from fetch by user setting.
-//   * -5002 BLOCKED_BY_CUSTOM_PROCESSOR Blocked by a custom processor.
+//   - -5    RUNTIME_EXCEPTION           Unexpected runtime exception.
+//   - -7    ILLEGAL_URI                 URI recognized as unsupported or illegal.
+//   - -4000 CHAFF_DETECTION             Chaff detection of traps/content with negligible value applied.
+//   - -4001 TOO_MANY_HOPS               The URI is too many link hops away from the seed.
+//   - -4002 TOO_MANY_TRANSITIVE_HOPS    The URI is too many embed/transitive hops away from the last URI in scope.
+//   - -5001 BLOCKED                     Blocked from fetch by user setting.
+//   - -5002 BLOCKED_BY_CUSTOM_PROCESSOR Blocked by a custom processor.
 func init() {
 	for k, v := range statusValues {
 		starlark.Universe[k] = v
