@@ -30,7 +30,10 @@ func isScheme(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple,
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &scheme); err != nil {
 		return nil, err
 	}
-	qUrl := thread.Local(urlKey).(*UrlValue)
+	qUrl, ok := thread.Local(urlKey).(*UrlValue)
+	if !ok {
+		return nil, fmt.Errorf("url not set")
+	}
 	s := strings.TrimRight(qUrl.parsedUri.Protocol(), ":")
 	scheme = strings.ToLower(scheme)
 	match := False
