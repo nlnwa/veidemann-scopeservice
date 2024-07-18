@@ -101,11 +101,13 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 	_, err = prog.Init(thread, nil)
 	t.ObserveDuration()
 	if err != nil {
-		if evalErr, ok := err.(*starlark.EvalError); ok {
-			if evalErr.Unwrap() == EndOfComputation {
+		evalErr := new(starlark.EvalError)
+		if errors.As(err, &evalErr) {
+			if errors.Is(evalErr, EndOfComputation) {
 				//	Computation was aborted
 			} else {
-				if w, ok := evalErr.Unwrap().(*wrappedError); ok {
+				w := new(wrappedError)
+				if errors.As(evalErr, &w) {
 					// Script returned Status wrapped as Error
 					e := (*commons.Error)(w)
 					return &scopechecker.ScopeCheckResponse{
