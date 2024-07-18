@@ -2,17 +2,18 @@ package script
 
 import (
 	"errors"
+	"os"
+	"strings"
+	"time"
+	"veidemann-scopeservice/pkg/telemetry"
+
 	"github.com/nlnwa/veidemann-api/go/commons/v1"
 	"github.com/nlnwa/veidemann-api/go/frontier/v1"
 	"github.com/nlnwa/veidemann-api/go/scopechecker/v1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
-	"go.starlark.net/resolve"
 	"go.starlark.net/starlark"
-	"os"
-	"strings"
-	"time"
-	"veidemann-scopeservice/pkg/telemetry"
+	"go.starlark.net/syntax"
 )
 
 const (
@@ -29,12 +30,11 @@ var scriptLogger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat:
 
 // RunScopeScript runs the Scope checking script and returns the Scope status.
 func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debug bool) *scopechecker.ScopeCheckResponse {
-	resolve.AllowNestedDef = true      // allow def statements within function bodies
-	resolve.AllowLambda = true         // allow lambda expressions
-	resolve.AllowFloat = true          // allow floating point literals, the 'float' built-in, and x / y
-	resolve.AllowSet = true            // allow the 'set' built-in
-	resolve.AllowGlobalReassign = true // allow reassignment to top-level names; also, allow if/for/while at top-level
-	resolve.AllowRecursion = true      // allow while statements and recursive functions
+	options := &syntax.FileOptions{
+		Set:            true, // allow the 'set' built-in
+		Recursion:      true, // allow while statements and recursive functions
+		GlobalReassign: true, // allow reassignment to top-level names; also, allow if/for/while at top-level
+	}
 
 	consoleLog := strings.Builder{}
 
@@ -58,7 +58,7 @@ func RunScopeScript(name string, src interface{}, qUri *frontier.QueuedUri, debu
 
 	// Compile source
 	t := prometheus.NewTimer(telemetry.CompileScriptSeconds)
-	_, prog, err := starlark.SourceProgram(name, src, starlark.StringDict{}.Has)
+	_, prog, err := starlark.SourceProgramOptions(options, name, src, starlark.StringDict{}.Has)
 	if err != nil {
 		return &scopechecker.ScopeCheckResponse{
 			Evaluation:      scopechecker.ScopeCheckResponse_EXCLUDE,
