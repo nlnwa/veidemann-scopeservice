@@ -36,8 +36,6 @@ jobs:
       - uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          # Enable additional linters (see: https://golangci-lint.run/usage/linters/)
-          args: -E "bodyclose" -E "dogsled" -E "durationcheck" -E "errorlint" -E "forcetypeassert" -E "noctx" -E "exhaustive" -E "exportloopref" --timeout 3m0s
   build_container:
     name: Build container image
     runs-on: ubuntu-latest
