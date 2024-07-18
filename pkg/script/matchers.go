@@ -55,7 +55,10 @@ func isReferrer(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tupl
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &referrer); err != nil {
 		return nil, err
 	}
-	qUrl := thread.Local(urlKey).(*UrlValue)
+	qUrl, ok := thread.Local(urlKey).(*UrlValue)
+	if !ok {
+		return nil, fmt.Errorf("url not set")
+	}
 	s := strings.TrimSpace(qUrl.qUri.Referrer)
 	referrer = strings.ToLower(referrer)
 	match := False
