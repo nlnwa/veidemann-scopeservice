@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/opentracing/opentracing-go"
-	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,9 +9,13 @@ import (
 	"veidemann-scopeservice/pkg/server"
 	"veidemann-scopeservice/pkg/telemetry"
 
+	"github.com/opentracing/opentracing-go"
+	"github.com/rs/zerolog/log"
+
+	"strings"
+
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 func main() {
@@ -60,7 +62,7 @@ func main() {
 	defer ms.Close()
 
 	go func() {
-		signals := make(chan os.Signal)
+		signals := make(chan os.Signal, 2)
 		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
 		select {

@@ -1,9 +1,11 @@
 package script
 
 import (
+	"errors"
 	"fmt"
-	"go.starlark.net/starlark"
 	"strings"
+
+	"go.starlark.net/starlark"
 )
 
 func init() {
@@ -30,7 +32,10 @@ func isScheme(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple,
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &scheme); err != nil {
 		return nil, err
 	}
-	qUrl := thread.Local(urlKey).(*UrlValue)
+	qUrl, ok := thread.Local(urlKey).(*UrlValue)
+	if !ok {
+		return nil, fmt.Errorf("url not set")
+	}
 	s := strings.TrimRight(qUrl.parsedUri.Protocol(), ":")
 	scheme = strings.ToLower(scheme)
 	match := False
@@ -51,7 +56,10 @@ func isReferrer(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tupl
 	if err := starlark.UnpackPositionalArgs(b.Name(), args, kwargs, 1, &referrer); err != nil {
 		return nil, err
 	}
-	qUrl := thread.Local(urlKey).(*UrlValue)
+	qUrl, ok := thread.Local(urlKey).(*UrlValue)
+	if !ok {
+		return nil, fmt.Errorf("url not set")
+	}
 	s := strings.TrimSpace(qUrl.qUri.Referrer)
 	referrer = strings.ToLower(referrer)
 	match := False
@@ -116,7 +124,7 @@ func maxHopsFromSeed(thread *starlark.Thread, b *starlark.Builtin, args starlark
 	if h, err := parameterAsInt64(maxHops); err == nil {
 		match = len(discoveryPath) > int(h)
 	} else {
-		if err != None {
+		if errors.Is(err, None) {
 			return nil, err
 		}
 	}

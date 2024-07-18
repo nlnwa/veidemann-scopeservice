@@ -112,7 +112,7 @@ func TestScopeCheckerServer_ScopeCheck(t *testing.T) {
 				Error: &commons.Error{
 					Code:   -7,
 					Msg:    "error parsing uri",
-					Detail: "Error: 504: illegal host, Url: http://%00foo.bar/aa bb/cc?jsessionid=1&foo#bar, Cause: Error: 100: illegal code point '\x00'",
+					Detail: "Error: The host contains a forbidden domain code point: '\x00'. Url: 'http://%00foo.bar/aa bb/cc?jsessionid=1&foo#bar'",
 				},
 			}},
 	}
