@@ -3,15 +3,17 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
+	"reflect"
+	"strings"
+	"testing"
+
+	"veidemann-scopeservice/pkg/script"
+
 	"github.com/nlnwa/veidemann-api/go/commons/v1"
 	"github.com/nlnwa/veidemann-api/go/config/v1"
 	"github.com/nlnwa/veidemann-api/go/frontier/v1"
 	"github.com/nlnwa/veidemann-api/go/scopechecker/v1"
-	"reflect"
-	"strings"
-	"testing"
-	"veidemann-scopeservice/pkg/script"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func init() {
@@ -234,7 +236,7 @@ func newQUri(uri, seed, discoveryPath string) *frontier.QueuedUri {
 	return &frontier.QueuedUri{
 		Id:                  "id1",
 		ExecutionId:         "eid1",
-		DiscoveredTimeStamp: ptypes.TimestampNow(),
+		DiscoveredTimeStamp: timestamppb.Now(),
 		Sequence:            2,
 		Uri:                 uri,
 		Ip:                  "127.0.0.1",
