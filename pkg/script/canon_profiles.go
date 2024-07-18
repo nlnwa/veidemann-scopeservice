@@ -11,6 +11,7 @@ var CrawlCanonicalizationProfile url.Parser
 func InitializeCanonicalizationProfiles(includeFragment bool) {
 	opts := []url.ParserOption{
 		url.WithCollapseConsecutiveSlashes(),
+		url.WithSkipEqualsForEmptySearchParamsValue(),
 		canonicalizer.WithRemoveUserInfo(),
 		canonicalizer.WithRepeatedPercentDecoding(),
 		canonicalizer.WithSortQuery(canonicalizer.SortKeys),
@@ -23,6 +24,7 @@ func InitializeCanonicalizationProfiles(includeFragment bool) {
 
 	opts = []url.ParserOption{
 		url.WithCollapseConsecutiveSlashes(),
+		url.WithSkipEqualsForEmptySearchParamsValue(),
 		canonicalizer.WithRemoveUserInfo(),
 		canonicalizer.WithSortQuery(canonicalizer.SortKeys),
 		canonicalizer.WithDefaultScheme("http"),
