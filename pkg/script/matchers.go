@@ -1,6 +1,7 @@
 package script
 
 import (
+	"errors"
 	"fmt"
 	"go.starlark.net/starlark"
 	"strings"
@@ -119,7 +120,7 @@ func maxHopsFromSeed(thread *starlark.Thread, b *starlark.Builtin, args starlark
 	if h, err := parameterAsInt64(maxHops); err == nil {
 		match = len(discoveryPath) > int(h)
 	} else {
-		if err != None {
+		if errors.Is(err, None) {
 			return nil, err
 		}
 	}
