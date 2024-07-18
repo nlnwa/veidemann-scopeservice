@@ -58,21 +58,24 @@ var statusValues = map[string]Status{
 
 type Status int32
 
+// Implement starlark.Value interface
 func (s Status) Type() string          { return "end of computation status" }
 func (s Status) Freeze()               {} // immutable
 func (s Status) Truth() starlark.Bool  { return true }
 func (s Status) Hash() (uint32, error) { return starlark.MakeUint(uint(s)).Hash() }
 func (s Status) String() string        { return statusNames[s] }
 
+// Implement starlark.Unpacker interface
 func (s *Status) Unpack(v starlark.Value) error {
 	switch val := v.(type) {
 	case Status:
 		*s = val
 	case starlark.String:
-		*s = statusValues[val.GoString()]
-		if s == nil {
+		value, ok := statusValues[val.GoString()]
+		if !ok {
 			return errors.New("Illegal type " + val.String())
 		}
+		*s = value
 	default:
 		return errors.New("Illegal type " + val.String())
 	}
