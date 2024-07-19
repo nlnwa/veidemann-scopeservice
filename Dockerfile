@@ -15,7 +15,7 @@ COPY . .
 #   -w disable DWARF generation
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" .
 
-FROM gcr.io/distroless/base
+FROM gcr.io/distroless/static-debian12
 COPY --from=build /build/veidemann-scopeservice /
 
 # api server
